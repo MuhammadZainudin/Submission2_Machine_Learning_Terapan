@@ -63,7 +63,7 @@ Dataset yang digunakan diperoleh dari [Kaggle Anime Recommendation Database](htt
 
 Distribusi rating menunjukkan bagaimana persebaran penilaian terhadap anime secara umum:
 
-![Visualisasi Distribusi Rating Anime](Image/Visualisasi%20Distribusi%20Rating%20Anime.png)
+![Visualisasi Distribusi Rating Anime](imeges/Visualisasi%20Distribusi%20Rating%20Anime.png)
 
 ---
 
@@ -71,7 +71,7 @@ Distribusi rating menunjukkan bagaimana persebaran penilaian terhadap anime seca
 
 Gambar berikut menampilkan 10 anime dengan jumlah anggota (members) terbanyak di database, menunjukkan popularitasnya di kalangan pengguna:
 
-![Visualisasi 10 Anime dengan Jumlah Members Terbanyak](Image/Visualisasi%2010%20Anime%20dengan%20Jumlah%20Members%20Terbanyak.png)
+![Visualisasi 10 Anime dengan Jumlah Members Terbanyak](imeges/Visualisasi%2010%20Anime%20dengan%20Jumlah%20Members%20Terbanyak.png)
 
 ---
 
@@ -79,7 +79,7 @@ Gambar berikut menampilkan 10 anime dengan jumlah anggota (members) terbanyak di
 
 Distribusi rating berdasarkan interaksi pengguna terhadap anime:
 
-![Visualisasi Distribusi Rating oleh Pengguna](Image/Visualisasi%20Distribusi%20Rating%20oleh%20Pengguna.png)
+![Visualisasi Distribusi Rating oleh Pengguna](imeges/Visualisasi%20Distribusi%20Rating%20oleh%20Pengguna.png)
 
 ---
 
@@ -188,7 +188,7 @@ Evaluasi dilakukan terhadap model collaborative filtering (SVD) menggunakan metr
 
 Loss function selama proses training model collaborative filtering ditampilkan dalam grafik berikut:
 
-![Visualisasi Loss Selama Training](Image/Visualisasi%20Loss%20Selama%20Training.png)
+![Visualisasi Loss Selama Training](imeges/Visualisasi%20Loss%20Selama%20Training.png)
 
 ---
 
@@ -196,7 +196,7 @@ Loss function selama proses training model collaborative filtering ditampilkan d
 
 Mean Absolute Error (MAE) juga divisualisasikan untuk melihat performa model dari waktu ke waktu:
 
-![Visualisasi MAE Selama Training](Image/Visualisasi%20MAE%20Selama%20Training.png)
+![Visualisasi MAE Selama Training](imeges/Visualisasi%20MAE%20Selama%20Training.png)
 
 ---
 
@@ -204,7 +204,7 @@ Mean Absolute Error (MAE) juga divisualisasikan untuk melihat performa model dar
 
 Scatter plot berikut menunjukkan hubungan antara rating prediksi dan aktual, membantu kita mengevaluasi ketepatan model:
 
-![Visualisasi Scatter Plot Prediksi vs Aktual](Image/Visualisasi%20Scatter%20Plot%20Prediksi%20vs%20Aktual.png)
+![Visualisasi Scatter Plot Prediksi vs Aktual](imeges/Visualisasi%20Scatter%20Plot%20Prediksi%20vs%20Aktual.png)
 
 ---
 
