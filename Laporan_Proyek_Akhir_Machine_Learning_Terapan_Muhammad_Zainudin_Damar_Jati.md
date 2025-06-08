@@ -139,25 +139,53 @@ cos_sim = cosine_similarity(tfidf_matrix)
 
 ---
 
-### 2. Collaborative Filtering (SVD)
+### 2. Collaborative Filtering (Neural Collaborative Filtering)
 
-* Menggunakan algoritma SVD dari library `Surprise` untuk memprediksi rating berdasarkan interaksi pengguna lain.
+* Menggunakan pendekatan **Neural Collaborative Filtering (NCF)** berbasis deep learning dengan representasi pengguna dan anime dalam bentuk **embedding**.
+* Model dilatih untuk memprediksi rating antara pengguna dan anime berdasarkan pola interaksi historis.
 
 ```python
-from surprise import SVD, Dataset, Reader
-from surprise.model_selection import train_test_split
+# User & Anime Embedding Input
+user_input = Input(shape=(1,), name='user_input')
+anime_input = Input(shape=(1,), name='anime_input')
 
-reader = Reader(rating_scale=(1, 10))
-data = Dataset.load_from_df(rating_df[['user_id', 'anime_id', 'rating']], reader)
-trainset, testset = train_test_split(data, test_size=0.2)
+# Embedding layer
+user_embed = Embedding(input_dim=num_users, output_dim=embedding_dim)(user_input)
+anime_embed = Embedding(input_dim=num_anime, output_dim=embedding_dim)(anime_input)
 
-model = SVD()
-model.fit(trainset)
-predictions = model.test(testset)
+# Flatten & Concatenate
+user_vec = Flatten()(user_embed)
+anime_vec = Flatten()(anime_embed)
+concat = Concatenate()([user_vec, anime_vec])
+
+# Dense layers
+x = Dense(128)(concat)
+x = LeakyReLU()(x)
+x = Dropout(0.4)(x)
+x = Dense(64)(x)
+x = LeakyReLU()(x)
+x = Dropout(0.3)(x)
+x = Dense(32)(x)
+x = LeakyReLU()(x)
+x = Dropout(0.2)(x)
+
+# Output layer
+output = Dense(1)(x)
+
+model = Model(inputs=[user_input, anime_input], outputs=output)
+model.compile(optimizer=Adam(1e-4), loss=Huber(), metrics=['mae'])
+model.fit([x_train[:, 0], x_train[:, 1]], y_train, ...)
 ```
 
-**Kelebihan**: Dapat memberikan prediksi personal yang akurat.
-**Kekurangan**: Tidak dapat merekomendasikan untuk user baru (cold start user).
+**Kelebihan**:
+
+* Dapat memodelkan interaksi kompleks antar pengguna dan anime.
+* Akurasi lebih tinggi dibanding CF klasik seperti SVD jika data cukup besar.
+
+**Kekurangan**:
+
+* Memerlukan lebih banyak data dan sumber daya komputasi.
+* Tidak cocok untuk user baru tanpa histori (cold start user).
 
 ---
 
