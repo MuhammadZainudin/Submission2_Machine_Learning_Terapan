@@ -2,14 +2,13 @@
 
 ## Project Overview
 
-Dalam era digital yang dipenuhi jutaan konten hiburan, menemukan anime yang sesuai dengan preferensi pengguna menjadi tantangan tersendiri. Dengan banyaknya pilihan, pengguna membutuhkan sistem yang mampu mempersonalisasi rekomendasi agar waktu eksplorasi lebih efisien. Oleh karena itu, sistem rekomendasi memegang peranan penting dalam menyajikan konten yang relevan, khususnya dalam industri hiburan seperti anime.
+Sistem rekomendasi telah menjadi komponen penting dalam banyak platform digital modern, termasuk dalam industri hiburan seperti streaming anime. Seiring pertumbuhan industri anime dan diversifikasi preferensi penonton, kebutuhan akan sistem yang dapat memberikan rekomendasi personalisasi semakin mendesak. Sistem rekomendasi memungkinkan pengguna untuk menemukan konten baru yang relevan berdasarkan preferensi mereka, sehingga meningkatkan keterlibatan pengguna dan durasi penggunaan platform.
 
-Sistem rekomendasi membantu meningkatkan keterlibatan pengguna, memperpanjang waktu tonton, dan mendukung retensi pelanggan. Berdasarkan studi \[Ricci et al., 2015]\[1], sistem rekomendasi terbukti efektif dalam meningkatkan kepuasan pengguna dan mendorong konsumsi konten yang lebih tinggi.
+Masalah ini penting diselesaikan karena jumlah anime yang sangat banyak bisa membuat pengguna kesulitan menentukan pilihan tontonan. Pendekatan tradisional seperti pencarian manual atau daftar populer tidak mampu memenuhi kebutuhan personalisasi pengguna secara optimal.
 
-Proyek ini mengembangkan sistem rekomendasi untuk anime dengan menggabungkan dua pendekatan utama: **content-based filtering** dan **collaborative filtering**. Pendekatan ganda ini memungkinkan sistem merekomendasikan anime berdasarkan kemiripan konten (genre) dan juga pola perilaku pengguna lain.
+Berdasarkan studi oleh Bobadilla et al. (2013), sistem rekomendasi dapat dikategorikan menjadi Collaborative Filtering, Content-Based Filtering, dan Hybrid Systems, masing-masing dengan kelebihan dan keterbatasan tertentu \[1].
 
-**Referensi**:
-\[1] Ricci, F., Rokach, L., & Shapira, B. (2015). *Recommender Systems Handbook*. Springer.
+> \[1] J. Bobadilla, F. Ortega, A. Hernando, and A. Gutiérrez, “Recommender systems survey,” *Knowledge-Based Systems*, vol. 46, pp. 109–132, 2013.
 
 ---
 
@@ -27,45 +26,52 @@ Proyek ini mengembangkan sistem rekomendasi untuk anime dengan menggabungkan dua
 
 ### Solution Statements
 
-* **Content-Based Filtering**: Menggunakan TF-IDF dan cosine similarity berdasarkan genre.
-* **Collaborative Filtering**: Menggunakan matrix factorization (SVD) untuk mempelajari interaksi pengguna–anime dan memprediksi rating.
+* **Content-Based Filtering (CBF)** : Sistem rekomendasi berdasarkan kemiripan item. Fitur utama yang digunakan adalah genre anime. Pendekatan ini sangat efektif untuk pengguna baru (cold-start) karena hanya mengandalkan informasi item.
+* **Neural Collaborative Filtering (NCF)** : Menggunakan pendekatan berbasis deep learning untuk mempelajari interaksi antara pengguna dan item. Model ini mampu menangkap hubungan non-linear yang kompleks dalam preferensi pengguna.
 
 ---
 
 ## Data Understanding
 
-Dataset yang digunakan diperoleh dari [Kaggle Anime Recommendation Database](https://www.kaggle.com/datasets/CooperUnion/anime-recommendations-database) dan terdiri dari dua file utama:
+Dataset yang digunakan dalam proyek ini bersumber dari [Anime Recommendation Database di Kaggle](https://www.kaggle.com/datasets/CooperUnion/anime-recommendations-database), yang terdiri atas dua file utama:
 
-* `anime.csv` (12.294 entri): berisi informasi deskriptif tiap anime.
-* `rating.csv` (sekitar 7,8 juta entri): mencatat interaksi pengguna dengan anime melalui rating.
+* **`anime.csv`**: berisi metadata tentang anime seperti judul, genre, jenis (TV, Movie, OVA, dll), jumlah episode, rating, dan jumlah anggota komunitas.
+* **`rating.csv`**: memuat interaksi pengguna dengan anime berupa pemberian rating, yang mencakup ID pengguna, ID anime, dan nilai rating.
 
-### Fitur-Fitur pada Dataset:
+### Library yang Digunakan
 
-**anime.csv**:
+Beberapa pustaka yang digunakan dalam proses ini mencakup:
 
-* `anime_id`: ID unik tiap anime.
-* `name`: Judul anime.
-* `genre`: Daftar genre dalam bentuk string yang dipisahkan koma.
-* `type`: Jenis anime (TV, Movie, OVA, dll).
-* `episodes`: Jumlah episode.
-* `rating`: Rata-rata rating dari semua pengguna.
-* `members`: Jumlah pengguna yang menambahkan anime ke daftar.
+* **Pandas** dan **NumPy**: untuk manipulasi dan analisis data.
+* **Matplotlib** dan **Seaborn**: untuk visualisasi eksploratif.
+* **Scikit-learn**: untuk preprocessing, evaluasi model, dan teknik representasi teks.
+* **TensorFlow/Keras**: untuk membangun model deep learning berbasis neural network.
 
-**rating.csv**:
+### Eksplorasi Data
 
-* `user_id`: ID pengguna.
-* `anime_id`: ID anime yang diberi rating.
-* `rating`: Nilai rating yang diberikan (1–10), atau -1 jika pengguna belum menilai.
+Setelah dataset dimuat, dilakukan eksplorasi awal untuk memahami struktur dan kualitas data. Beberapa temuan penting antara lain:
 
----
+* Dataset `anime.csv` terdiri dari **12.294** entri dengan 7 kolom.
+
+  * Terdapat nilai kosong (missing values) pada kolom `genre` dan `rating`.
+  * Genre disimpan dalam format string yang mengandung beberapa label yang perlu diproses lebih lanjut.
+  * Nilai `members` bervariasi sangat besar dan dapat digunakan sebagai indikator popularitas.
+
+* Dataset `rating.csv` terdiri dari lebih dari **7,8 juta** entri.
+
+  * Kolom `rating` berisi nilai dari 1 hingga 10, dengan **nilai -1** menandakan pengguna belum memberikan rating sebenarnya (hanya menonton).
+  * Perlu dilakukan filter agar model hanya menggunakan interaksi dengan rating valid (≥1).
+
+### Sampling
+
+Karena ukuran dataset `rating.csv` cukup besar, dilakukan pengambilan sampel sebanyak **50.000 baris** untuk keperluan eksplorasi awal dan efisiensi waktu pemrosesan. Analisis selanjutnya seperti pemeriksaan distribusi rating, jumlah interaksi per pengguna, dan popularitas anime akan dilakukan berdasarkan data sampel ini.
 
 ### Visualisasi Distribusi Rating Anime
 
-Distribusi rating menunjukkan bagaimana persebaran penilaian terhadap anime secara umum:
-
 ![Visualisasi Distribusi Rating Anime](imeges/Visualisasi%20Distribusi%20Rating%20Anime.png)
 
----
+Visualisasi Distribusi Rating Anime ini menunjukkan bahwa sebagian besar anime memiliki rating di kisaran **6 hingga 7**, dengan puncak distribusi terlihat di rentang tersebut. Bentuk grafik menyerupai kurva lonceng, yang mengindikasikan **distribusi mendekati normal**. Garis KDE (garis biru) membantu menunjukkan bahwa sebagian besar anime mendapat penilaian menengah, sedangkan rating ekstrem (sangat rendah atau sangat tinggi) relatif jarang terjadi.
+
 
 ### Visualisasi 10 Anime dengan Jumlah Members Terbanyak
 
@@ -73,43 +79,76 @@ Gambar berikut menampilkan 10 anime dengan jumlah anggota (members) terbanyak di
 
 ![Visualisasi 10 Anime dengan Jumlah Members Terbanyak](imeges/Visualisasi%2010%20Anime%20dengan%20Jumlah%20Members%20Terbanyak.png)
 
----
+Visualisasi 10 Anime dengan Jumlah Members Terbanyak ini menunjukkan bahwa anime **"Death Note"** memiliki jumlah members terbanyak, diikuti oleh **"Shingeki no Kyojin"** dan **"Sword Art Online"**. Hal ini menunjukkan bahwa anime-anime tersebut sangat populer di kalangan komunitas. Warna gradasi dari palet *viridis* membantu membedakan setiap batang, sementara format horizontal mempermudah pembacaan nama anime.
+
 
 ### Visualisasi Distribusi Rating oleh Pengguna
 
-Distribusi rating berdasarkan interaksi pengguna terhadap anime:
 
 ![Visualisasi Distribusi Rating oleh Pengguna](imeges/Visualisasi%20Distribusi%20Rating%20oleh%20Pengguna.png)
+
+Visualisasi Distribusi Rating oleh Pengguna ini memperlihatkan bahwa nilai **rating 8** merupakan yang paling sering diberikan, disusul oleh **rating 7 dan 9**, yang menandakan bahwa pengguna cenderung memberikan penilaian tinggi. Rating **-1** juga cukup tinggi kemunculannya; nilai ini menunjukkan pengguna belum memberikan rating (rating default dari sistem). Nilai rating rendah (1–5) sangat jarang muncul, menunjukkan bahwa pengguna jarang memberikan penilaian buruk terhadap anime yang mereka tonton.
 
 ---
 
 ## Data Preparation
 
-Tahapan persiapan data dilakukan agar data siap untuk modeling:
+### 1. Data Cleaning
 
-1. **Menghapus rating tidak valid**:
+#### Menghapus Rating Tidak Valid
 
-   * Filter `rating != -1` untuk memastikan hanya interaksi yang valid yang digunakan.
-
-2. **Penanganan missing values**:
-
-   * Genre kosong diisi dengan “Unknown”.
-   * Rating kosong pada `anime.csv` diisi dengan median rating.
-
-3. **Normalisasi genre**:
-
-   * Konversi ke huruf kecil (`lowercase`).
-   * Hilangkan spasi ekstra.
-
-4. **TF-IDF vectorization**:
-
-   * Genre diolah menjadi representasi numerik menggunakan TF-IDF, dengan token delimiter berupa koma.
+Beberapa rating pengguna memiliki nilai `-1`, yang menandakan bahwa pengguna belum memberikan penilaian. Nilai ini tidak relevan dan dihapus agar tidak mengganggu analisis.
 
 ```python
-from sklearn.feature_extraction.text import TfidfVectorizer
-anime['genre'] = anime['genre'].fillna("Unknown").str.lower()
-tfidf = TfidfVectorizer(token_pattern=r'[^,]+')
-tfidf_matrix = tfidf.fit_transform(anime['genre'])
+rating = rating[rating['rating'] != -1]
+```
+
+#### Menangani Nilai Kosong
+
+Nilai kosong pada kolom `genre` dan `type` diisi dengan `'unknown'`, sementara nilai kosong pada kolom `rating` diisi dengan nilai **median** agar tetap representatif terhadap distribusi data.
+
+#### Konversi dan Imputasi Kolom Episodes
+
+Kolom `episodes` awalnya berbentuk teks dan mengandung nilai tak valid seperti `'Unknown'`. Proses konversi dilakukan untuk menjadikannya numerik:
+
+* Nilai tak valid dikonversi menjadi NaN.
+* Nilai NaN diisi dengan median.
+* Diubah ke integer agar konsisten.
+
+#### Validasi Kolom Penting
+
+Setelah proses pembersihan, dipastikan tidak ada lagi nilai kosong pada kolom `episodes` dan `rating` agar proses model tidak gagal.
+
+```python
+assert not anime[['episodes', 'rating']].isnull().any().any()
+```
+
+#### Normalisasi Teks
+
+Untuk menjaga konsistensi, seluruh isi kolom teks diubah menjadi huruf kecil dan dihapus spasi yang tidak diperlukan. Ini penting agar data tidak dianggap berbeda hanya karena perbedaan kapitalisasi atau spasi.
+
+#### Perapihan Format Genre
+
+Spasi di sekitar tanda koma dalam kolom `genre` dihapus, agar genre dapat dikenali sebagai token tunggal dalam proses tokenisasi.
+
+#### Menghapus Genre Tidak Valid
+
+Baris dengan genre `'unknown'` dihapus agar hanya data dengan informasi genre yang valid digunakan dalam sistem rekomendasi.
+
+
+### 2. Membuat Dataset untuk Sistem Rekomendasi
+
+Dataset akhir untuk sistem rekomendasi berbasis konten disiapkan dengan hanya mengambil kolom:
+
+* `anime_id`
+* `title`
+* `genres`
+
+Kolom-kolom ini disalin dari dataset hasil pembersihan dan dinamai ulang agar lebih deskriptif. Dataset ini akan digunakan untuk ekstraksi fitur dan pembuatan vektor kesamaan.
+
+```python
+content_based = anime_cleaned[['anime_id', 'name', 'genre']].copy()
+content_based.columns = ['anime_id', 'title', 'genres']
 ```
 
 ---
@@ -189,28 +228,68 @@ model.fit([x_train[:, 0], x_train[:, 1]], y_train, ...)
 
 ---
 
-## Evaluation
+## Evaluasi Model
 
-Evaluasi dilakukan terhadap model collaborative filtering (SVD) menggunakan metrik:
+### Prediksi dan Transformasi Skala
 
-* **MAE (Mean Absolute Error)**:
+Setelah proses pelatihan selesai, model digunakan untuk memprediksi rating berdasarkan data validasi. Karena pada tahap preprocessing nilai rating telah dinormalisasi (misalnya ke skala 0–1), maka hasil prediksi perlu dikembalikan ke skala aslinya (1–10) menggunakan fungsi *inverse transform*.
 
-  $$
-  MAE = \frac{1}{n} \sum_{i=1}^n |y_i - \hat{y}_i|
-  $$
+Proses evaluasi dilakukan dengan langkah-langkah berikut:
 
-* **RMSE (Root Mean Squared Error)**:
+* Model memprediksi rating berdasarkan pasangan (user, anime).
+* Nilai prediksi dan nilai aktual dikembalikan ke skala aslinya.
+* Hasil prediksi diubah ke bentuk satu dimensi agar mudah dibandingkan dan divisualisasikan.
 
-  $$
-  RMSE = \sqrt{\frac{1}{n} \sum_{i=1}^n (y_i - \hat{y}_i)^2}
-  $$
 
-**Hasil evaluasi SVD**:
+### Evaluasi Kinerja Model (MSE, RMSE, MAE)
 
-* MAE: 0.89
-* RMSE: 1.15
+Untuk menilai akurasi prediksi model sistem rekomendasi, digunakan tiga metrik evaluasi utama: **MSE**, **RMSE**, dan **MAE**. Ketiganya mengukur seberapa jauh hasil prediksi model dari nilai sebenarnya, namun dengan pendekatan yang berbeda.
 
----
+
+#### Mean Squared Error (MSE)
+
+**Definisi:**
+MSE menghitung rata-rata dari **kuadrat selisih** antara nilai prediksi dan nilai aktual. Metrik ini sensitif terhadap outlier karena memberikan penalti lebih besar untuk kesalahan yang besar.
+
+**Rumus:**
+
+$$
+\text{MSE} = \frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2
+$$
+
+
+#### Root Mean Squared Error (RMSE)
+
+**Definisi:**
+RMSE adalah **akar kuadrat dari MSE**, sehingga memiliki satuan yang sama dengan skala rating (misalnya 1–10). RMSE memberikan informasi yang lebih mudah dipahami secara praktis dan tetap sensitif terhadap outlier.
+
+**Rumus:**
+
+$$
+\text{RMSE} = \sqrt{\frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2}
+$$
+
+
+#### Mean Absolute Error (MAE)
+
+**Definisi:**
+MAE menghitung rata-rata dari **nilai absolut selisih** antara nilai aktual dan nilai prediksi. Berbeda dari MSE dan RMSE, MAE **tidak terlalu dipengaruhi oleh outlier**, sehingga memberikan gambaran kesalahan umum secara langsung.
+
+**Rumus:**
+
+$$
+\text{MAE} = \frac{1}{n} \sum_{i=1}^{n} \left| y_i - \hat{y}_i \right|
+$$
+
+
+Hasil evaluasi menunjukkan:
+
+* MSE: 1.4011
+* RMSE: 1.1837
+* MAE: 0.8966
+
+Artinya, rata-rata kesalahan prediksi model berada di bawah 1 poin rating, yang menandakan bahwa model cukup akurat dalam memprediksi rating pengguna terhadap anime.
+
 
 ### Visualisasi Loss Selama Training
 
@@ -218,7 +297,8 @@ Loss function selama proses training model collaborative filtering ditampilkan d
 
 ![Visualisasi Loss Selama Training](imeges/Visualisasi%20Loss%20Selama%20Training.png)
 
----
+Visualisasi *loss vs epoch* menunjukkan bagaimana model belajar selama proses training. Nilai *train loss* dan *validation loss* sama-sama menurun dan stabil sejak awal, yang menandakan bahwa model tidak mengalami overfitting. Kedekatan antara keduanya menunjukkan bahwa model mampu belajar dari data pelatihan sekaligus mempertahankan performa pada data validasi.
+
 
 ### Visualisasi MAE Selama Training
 
@@ -226,7 +306,8 @@ Mean Absolute Error (MAE) juga divisualisasikan untuk melihat performa model dar
 
 ![Visualisasi MAE Selama Training](imeges/Visualisasi%20MAE%20Selama%20Training.png)
 
----
+Visualisasi *MAE vs epoch* menunjukkan bahwa kesalahan rata-rata prediksi terus menurun seiring waktu, baik pada data pelatihan (*train MAE*) maupun data validasi (*val MAE*). Nilai MAE yang stabil dan rendah di kedua set data mengindikasikan model memiliki prediksi yang akurat dan tidak mengalami overfitting.
+
 
 ### Visualisasi Scatter Plot Prediksi vs Aktual
 
@@ -234,18 +315,17 @@ Scatter plot berikut menunjukkan hubungan antara rating prediksi dan aktual, mem
 
 ![Visualisasi Scatter Plot Prediksi vs Aktual](imeges/Visualisasi%20Scatter%20Plot%20Prediksi%20vs%20Aktual.png)
 
+Visualisasi Scatter Plot Prediksi vs Aktual ini membandingkan prediksi model dengan rating aktual. Titik-titik yang menyebar dekat dengan garis diagonal menunjukkan prediksi yang akurat. Namun, terlihat model cenderung **melebihkan prediksi** untuk rating rendah (overestimate) dan **merendahkan prediksi** untuk rating tinggi (underestimate). Ini menunjukkan adanya bias ke nilai tengah, yang bisa diperbaiki dengan data lebih seimbang atau tuning model lebih lanjut.
+
+
 ---
 
 ## Kesimpulan
 
-Proyek ini berhasil membangun sistem rekomendasi anime dengan dua pendekatan:
+Proyek ini berhasil membangun sistem rekomendasi anime yang mampu menyajikan hasil yang relevan dan personal melalui kombinasi pendekatan berbasis konten dan pembelajaran interaksi pengguna. Sistem ini secara efektif mengidentifikasi kesamaan genre untuk menyarankan anime serupa, sekaligus mempelajari pola preferensi pengguna dari histori rating untuk menyesuaikan rekomendasi secara individual.
 
-* **Content-Based Filtering**: Efektif memberikan rekomendasi berdasarkan genre.
-* **Collaborative Filtering**: Memberikan rekomendasi personal berdasarkan perilaku pengguna lain dengan akurasi memadai.
+Seluruh tahap pengembangan, mulai dari pembersihan data, pengolahan atribut genre, pemrosesan nilai kosong, hingga pembentukan representasi embedding dan pelatihan model neural — dilakukan secara sistematis dan menyeluruh. Hasil yang diperoleh menunjukkan bahwa sistem mampu menangkap hubungan antara pengguna dan anime dengan cukup baik.
 
-**Pengembangan ke depan**:
+Lebih jauh, pendekatan berbasis genre memungkinkan sistem memberikan rekomendasi awal yang sesuai bahkan bagi pengguna baru, sementara teknik pembelajaran interaksi memungkinkan personalisasi yang lebih dalam untuk pengguna aktif. Hal ini menunjukkan bahwa solusi yang dibangun mampu menjawab tantangan dalam menyajikan rekomendasi yang relevan secara konten maupun perilaku.
 
-* Menerapkan sistem hybrid (menggabungkan CBF + CF).
-* Menambahkan fitur user demografi untuk rekomendasi yang lebih kontekstual.
-* Deploy ke web app atau API menggunakan Flask/Streamlit.
-* Eksperimen dengan deep learning (Autoencoder, NCF) untuk performa lebih baik.
+Dengan rancangan yang fleksibel dan pendekatan yang terintegrasi, sistem ini dapat menjadi fondasi yang kuat bagi pengembangan layanan rekomendasi anime yang lebih dinamis dan user-centric ke depannya.
