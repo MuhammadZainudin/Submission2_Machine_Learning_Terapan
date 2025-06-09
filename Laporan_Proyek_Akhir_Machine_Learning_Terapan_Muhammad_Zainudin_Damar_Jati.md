@@ -70,24 +70,36 @@ Karena ukuran dataset `rating.csv` cukup besar, dilakukan pengambilan sampel seb
 
 ![Visualisasi Distribusi Rating Anime](imeges/Visualisasi%20Distribusi%20Rating%20Anime.png)
 
-Visualisasi Distribusi Rating Anime ini menunjukkan bahwa sebagian besar anime memiliki rating di kisaran **6 hingga 7**, dengan puncak distribusi terlihat di rentang tersebut. Bentuk grafik menyerupai kurva lonceng, yang mengindikasikan **distribusi mendekati normal**. Garis KDE (garis biru) membantu menunjukkan bahwa sebagian besar anime mendapat penilaian menengah, sedangkan rating ekstrem (sangat rendah atau sangat tinggi) relatif jarang terjadi.
+Visualisasi Distribusi Rating Anime ini menunjukkan distribusi rating anime berdasarkan data yang ada. Rating anime paling banyak berada di kisaran 6 hingga 7, yang terlihat dari batang histogram tertinggi pada rentang tersebut. Secara umum, bentuk distribusinya menyerupai lonceng (distribusi normal), yang berarti sebagian besar anime memiliki rating di tingkat menengah, sementara yang memiliki rating sangat rendah atau sangat tinggi jumlahnya lebih sedikit. Garis lengkung biru di atas histogram merupakan kurva KDE (Kernel Density Estimation) yang membantu memperjelas pola sebaran data secara halus. Visualisasi ini memberikan gambaran bahwa rating anime cenderung terpusat di nilai tengah dan jarang ada yang memiliki rating ekstrem.
+
 
 
 ### Visualisasi 10 Anime dengan Jumlah Members Terbanyak
 
-Gambar berikut menampilkan 10 anime dengan jumlah anggota (members) terbanyak di database, menunjukkan popularitasnya di kalangan pengguna:
-
 ![Visualisasi 10 Anime dengan Jumlah Members Terbanyak](imeges/Visualisasi%2010%20Anime%20dengan%20Jumlah%20Members%20Terbanyak.png)
 
-Visualisasi 10 Anime dengan Jumlah Members Terbanyak ini menunjukkan bahwa anime **"Death Note"** memiliki jumlah members terbanyak, diikuti oleh **"Shingeki no Kyojin"** dan **"Sword Art Online"**. Hal ini menunjukkan bahwa anime-anime tersebut sangat populer di kalangan komunitas. Warna gradasi dari palet *viridis* membantu membedakan setiap batang, sementara format horizontal mempermudah pembacaan nama anime.
+Visualisasi 10 Anime dengan Jumlah Members Terbanyak ini menunjukkan 10 anime dengan jumlah members terbanyak berdasarkan data yang tersedia. Pada sumbu horizontal (x) ditampilkan jumlah members, yaitu jumlah pengguna yang menambahkan anime tersebut ke daftar mereka (biasanya di platform seperti MyAnimeList). Sedangkan sumbu vertikal (y) menunjukkan nama-nama anime.
+
+Anime dengan jumlah members terbanyak adalah "Death Note", diikuti oleh "Shingeki no Kyojin" dan "Sword Art Online". Ini menunjukkan bahwa anime-anime tersebut sangat populer dan memiliki banyak penggemar atau penonton yang tertarik untuk menontonnya atau sudah menontonnya.
+
+Grafik ini menggunakan warna gradasi dari palet viridis, yang membantu membedakan tiap batang secara visual. Tampilan horizontal memudahkan pembacaan nama-nama anime yang relatif panjang.
+
+
 
 
 ### Visualisasi Distribusi Rating oleh Pengguna
 
-
 ![Visualisasi Distribusi Rating oleh Pengguna](imeges/Visualisasi%20Distribusi%20Rating%20oleh%20Pengguna.png)
 
-Visualisasi Distribusi Rating oleh Pengguna ini memperlihatkan bahwa nilai **rating 8** merupakan yang paling sering diberikan, disusul oleh **rating 7 dan 9**, yang menandakan bahwa pengguna cenderung memberikan penilaian tinggi. Rating **-1** juga cukup tinggi kemunculannya; nilai ini menunjukkan pengguna belum memberikan rating (rating default dari sistem). Nilai rating rendah (1–5) sangat jarang muncul, menunjukkan bahwa pengguna jarang memberikan penilaian buruk terhadap anime yang mereka tonton.
+Visualisasi Distribusi Rating oleh Pengguna ini menunjukkan distribusi rating yang diberikan oleh pengguna terhadap anime berdasarkan sampel data sebanyak 50.000 entri. Sumbu horizontal (x) menunjukkan nilai rating (dari 1 hingga 10, dan ada satu nilai -1), sedangkan sumbu vertikal (y) menunjukkan jumlah pengguna yang memberikan rating tersebut.
+
+Dari grafik terlihat bahwa:
+
+* Rating 8 adalah yang paling sering diberikan oleh pengguna, diikuti oleh rating 7 dan 9, menandakan bahwa pengguna cenderung memberikan penilaian yang tinggi terhadap anime yang mereka tonton.
+* Rating -1 juga memiliki frekuensi yang sangat tinggi. Biasanya nilai ini menunjukkan entri yang belum diberi rating secara eksplisit oleh pengguna dalam data mentah.
+* Rating yang lebih rendah seperti 1 hingga 5 jarang diberikan, yang mengindikasikan bahwa pengguna cenderung tidak terlalu sering memberi penilaian buruk.
+
+
 
 ---
 
@@ -293,29 +305,31 @@ Artinya, rata-rata kesalahan prediksi model berada di bawah 1 poin rating, yang 
 
 ### Visualisasi Loss Selama Training
 
-Loss function selama proses training model collaborative filtering ditampilkan dalam grafik berikut:
-
 ![Visualisasi Loss Selama Training](imeges/Visualisasi%20Loss%20Selama%20Training.png)
 
-Visualisasi *loss vs epoch* menunjukkan bagaimana model belajar selama proses training. Nilai *train loss* dan *validation loss* sama-sama menurun dan stabil sejak awal, yang menandakan bahwa model tidak mengalami overfitting. Kedekatan antara keduanya menunjukkan bahwa model mampu belajar dari data pelatihan sekaligus mempertahankan performa pada data validasi.
+Visualisasi Loss Selama Training ini menunjukkan perubahan nilai loss selama proses pelatihan model (training) dari epoch ke epoch. Garis biru mewakili train loss (kesalahan pada data latih), dan garis oranye menunjukkan val loss (kesalahan pada data validasi).
+
+Terlihat bahwa pada awal pelatihan (epoch 0 ke 1), nilai train loss turun drastis, lalu mulai stabil setelahnya. Nilai val loss juga cukup stabil dan rendah sejak awal. Ini menandakan bahwa model belajar dengan cepat di awal dan kemudian mampu menjaga performa yang baik tanpa overfitting. Karena nilai train loss dan val loss sama-sama kecil dan mendekati, ini menunjukkan bahwa model bekerja dengan baik dan konsisten pada data pelatihan maupun data validasi.
 
 
 ### Visualisasi MAE Selama Training
 
-Mean Absolute Error (MAE) juga divisualisasikan untuk melihat performa model dari waktu ke waktu:
-
 ![Visualisasi MAE Selama Training](imeges/Visualisasi%20MAE%20Selama%20Training.png)
 
-Visualisasi *MAE vs epoch* menunjukkan bahwa kesalahan rata-rata prediksi terus menurun seiring waktu, baik pada data pelatihan (*train MAE*) maupun data validasi (*val MAE*). Nilai MAE yang stabil dan rendah di kedua set data mengindikasikan model memiliki prediksi yang akurat dan tidak mengalami overfitting.
+Visualisasi MAE Selama Training ini menunjukkan perubahan nilai MAE (Mean Absolute Error) selama proses pelatihan model. Garis biru menunjukkan train MAE (kesalahan rata-rata pada data latih), sedangkan garis oranye menunjukkan val MAE (kesalahan rata-rata pada data validasi).
+
+Dari grafik terlihat bahwa MAE menurun tajam di awal (dari epoch 0 ke 1), lalu terus menurun secara perlahan dan stabil seiring bertambahnya epoch. Nilai train MAE dan val MAE saling berdekatan dan sama-sama rendah, yang berarti model belajar dengan baik dan konsisten, serta tidak mengalami overfitting. Kesalahan prediksi model semakin kecil dari waktu ke waktu, baik pada data latih maupun validasi. Ini menandakan bahwa model cukup akurat dan dapat diandalkan.
 
 
 ### Visualisasi Scatter Plot Prediksi vs Aktual
 
-Scatter plot berikut menunjukkan hubungan antara rating prediksi dan aktual, membantu kita mengevaluasi ketepatan model:
-
 ![Visualisasi Scatter Plot Prediksi vs Aktual](imeges/Visualisasi%20Scatter%20Plot%20Prediksi%20vs%20Aktual.png)
 
-Visualisasi Scatter Plot Prediksi vs Aktual ini membandingkan prediksi model dengan rating aktual. Titik-titik yang menyebar dekat dengan garis diagonal menunjukkan prediksi yang akurat. Namun, terlihat model cenderung **melebihkan prediksi** untuk rating rendah (overestimate) dan **merendahkan prediksi** untuk rating tinggi (underestimate). Ini menunjukkan adanya bias ke nilai tengah, yang bisa diperbaiki dengan data lebih seimbang atau tuning model lebih lanjut.
+Visualisasi Actual vs Predicted Ratings ini menunjukkan seberapa akurat model dalam memprediksi rating dibandingkan dengan nilai rating yang sebenarnya. Setiap titik biru pada grafik mewakili satu data, misalnya satu ulasan dari pengguna, dengan sumbu horizontal menunjukkan rating yang sebenarnya (Actual Rating), dan sumbu vertikal menunjukkan rating yang diprediksi oleh model (Predicted Rating).
+
+Garis merah putus-putus adalah garis prediksi sempurna, di mana nilai prediksi sama persis dengan nilai aktual. Jika model sangat akurat, maka semua titik akan berada di sepanjang garis ini. Namun, dari grafik terlihat bahwa banyak titik berada di atas garis merah ketika nilai aktual rendah, artinya model sering memberikan rating yang lebih tinggi dari sebenarnya (overestimate). Sebaliknya, saat nilai aktual tinggi, banyak titik berada di bawah garis, menunjukkan model sering memprediksi lebih rendah dari nilai sebenarnya (underestimate).
+
+Sebagai contoh, ketika nilai rating sebenarnya adalah 2, banyak prediksi model mendekati 7 atau lebih, dan ketika rating sebenarnya adalah 9 atau 10, model kadang memprediksi hanya 6 atau 7. Ini menunjukkan bahwa model belum cukup akurat dan cenderung bias ke arah nilai tengah. Untuk meningkatkan akurasi, model dapat ditingkatkan dengan teknik tuning atau menggunakan data pelatihan yang lebih seimbang.
 
 
 ---
@@ -324,7 +338,7 @@ Visualisasi Scatter Plot Prediksi vs Aktual ini membandingkan prediksi model den
 
 Proyek ini berhasil membangun sistem rekomendasi anime yang mampu menyajikan hasil yang relevan dan personal melalui kombinasi pendekatan berbasis konten dan pembelajaran interaksi pengguna. Sistem ini secara efektif mengidentifikasi kesamaan genre untuk menyarankan anime serupa, sekaligus mempelajari pola preferensi pengguna dari histori rating untuk menyesuaikan rekomendasi secara individual.
 
-Seluruh tahap pengembangan, mulai dari pembersihan data, pengolahan atribut genre, pemrosesan nilai kosong, hingga pembentukan representasi embedding dan pelatihan model neural — dilakukan secara sistematis dan menyeluruh. Hasil yang diperoleh menunjukkan bahwa sistem mampu menangkap hubungan antara pengguna dan anime dengan cukup baik.
+Seluruh tahap pengembangan, mulai dari pembersihan data, pengolahan atribut genre, pemrosesan nilai kosong, hingga pembentukan representasi embedding dan pelatihan model neural, dilakukan secara sistematis dan menyeluruh. Hasil yang diperoleh menunjukkan bahwa sistem mampu menangkap hubungan antara pengguna dan anime dengan cukup baik.
 
 Lebih jauh, pendekatan berbasis genre memungkinkan sistem memberikan rekomendasi awal yang sesuai bahkan bagi pengguna baru, sementara teknik pembelajaran interaksi memungkinkan personalisasi yang lebih dalam untuk pengguna aktif. Hal ini menunjukkan bahwa solusi yang dibangun mampu menjawab tantangan dalam menyajikan rekomendasi yang relevan secara konten maupun perilaku.
 
