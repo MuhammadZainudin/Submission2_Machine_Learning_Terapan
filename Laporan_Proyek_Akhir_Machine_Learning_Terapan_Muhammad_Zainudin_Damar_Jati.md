@@ -280,15 +280,30 @@ Model NCF dibangun dengan arsitektur *embedding* yang memetakan ID pengguna dan 
 
 ## Evaluasi Model
 
-### Prediksi dan Transformasi Skala
+### A. Evaluasi Model Content-Based Filtering
 
-Setelah proses pelatihan selesai, model digunakan untuk memprediksi rating berdasarkan data validasi. Karena pada tahap preprocessing nilai rating telah dinormalisasi (misalnya ke skala 0–1), maka hasil prediksi perlu dikembalikan ke skala aslinya (1–10) menggunakan fungsi *inverse transform*.
+Model *Content-Based Filtering* merekomendasikan item berdasarkan atribut atau fitur dari item itu sendiri yang disukai pengguna di masa lalu. Dalam kasus ini, rekomendasi anime didasarkan pada kesamaan genre. Untuk menilai relevansi rekomendasi, kami menggunakan metrik **Precision@5** dan **Recall@5**.
 
-Proses evaluasi dilakukan dengan langkah-langkah berikut:
+#### Precision@5
 
-* Model memprediksi rating berdasarkan pasangan (user, anime).
-* Nilai prediksi dan nilai aktual dikembalikan ke skala aslinya.
-* Hasil prediksi diubah ke bentuk satu dimensi agar mudah dibandingkan dan divisualisasikan.
+**Precision@5** mengukur proporsi rekomendasi teratas (dalam hal ini, 5 rekomendasi teratas) yang relevan. Relevansi di sini didefinisikan sebagai rekomendasi anime yang memiliki setidaknya satu genre yang sama dengan genre anime asli yang menjadi dasar rekomendasi.
+
+#### Recall@5
+
+**Recall@5** mengukur proporsi genre relevan yang berhasil direkomendasikan oleh model dari total genre yang ada pada anime asli. Metrik ini membantu melihat seberapa lengkap cakupan rekomendasi dalam menangkap preferensi genre pengguna.
+
+#### Hasil Evaluasi Model Content-Based Filtering
+
+Setelah melakukan evaluasi dengan 100 sampel anime, model *Content-Based Filtering* menunjukkan hasil sebagai berikut:
+
+  * **Precision@5: 1.00**
+  * **Recall@5: 0.97**
+
+Hasil ini menunjukkan bahwa model *Content-Based Filtering* **sangat efektif** dalam merekomendasikan anime dengan genre yang relevan. Nilai Precision@5 sebesar 1.00 berarti bahwa semua (100%) dari 5 rekomendasi teratas yang diberikan oleh model memiliki setidaknya satu genre yang tumpang tindih dengan anime asli. Sementara itu, Recall@5 sebesar 0.97 menunjukkan bahwa hampir semua genre dari anime asli berhasil tercakup dalam daftar rekomendasi. Ini mengindikasikan bahwa model tidak hanya merekomendasikan anime yang relevan, tetapi juga cukup komprehensif dalam mencakup preferensi genre pengguna.
+
+### B. Evaluasi Model Collaborative Filtering
+
+Model *Collaborative Filtering* bekerja dengan menemukan pola dalam interaksi pengguna-item (misalnya, rating yang diberikan pengguna kepada anime) untuk membuat rekomendasi. Untuk model ini, kami mengevaluasi akurasi prediksi rating menggunakan metrik **Mean Squared Error (MSE)**, **Root Mean Squared Error (RMSE)**, dan **Mean Absolute Error (MAE)**. Sebelum evaluasi, semua prediksi rating dinormalisasi kembali ke skala aslinya (1-10).
 
 
 ### Evaluasi Kinerja Model (MSE, RMSE, MAE)
