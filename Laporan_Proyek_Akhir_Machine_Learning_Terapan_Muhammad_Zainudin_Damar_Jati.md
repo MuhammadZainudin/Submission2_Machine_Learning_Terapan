@@ -265,17 +265,45 @@ Model NCF dibangun dengan arsitektur *embedding* yang memetakan ID pengguna dan 
     Kedua *callback* ini meningkatkan efisiensi dan performa pelatihan serta mencegah *overfitting*.
 4.  **Pelatihan Model**: Model dilatih selama maksimal 50 *epoch* dengan *batch size* 128. *Callbacks* yang telah didefinisikan digunakan untuk mengatur pelatihan secara dinamis.
 
+#### Top-N Rekomendasi:
+
+Setelah model selesai dilatih, sistem mampu memberikan rekomendasi personal berdasarkan riwayat interaksi pengguna. Proses ini dilakukan dengan cara:
+
+1. Memuat kembali hasil *encoding* dan *decoding* ID pengguna dan anime dari file `.pkl`.
+2. Mengidentifikasi anime yang **belum pernah ditonton** oleh pengguna.
+3. Memprediksi skor ketertarikan pengguna terhadap anime-anime tersebut.
+4. Mengembalikan **Top-N anime dengan skor prediksi tertinggi** dalam bentuk judul dan ID.
+
+Sebagai contoh, berikut adalah **Top-10 rekomendasi** untuk pengguna dengan ID `20`:
+
+```
+Top-10 rekomendasi untuk user 20:
+    anime_id                                               name
+0      32281                                     kimi no na wa.
+1       5114                   fullmetal alchemist: brotherhood
+2      28977                                           gintama°
+3       9253                                        steins;gate
+4       9969                                      gintama&#039;
+5      32935  haikyuu!!: karasuno koukou vs shiratorizawa ga...
+6      11061                             hunter x hunter (2011)
+7        820                               ginga eiyuu densetsu
+10      4181                               clannad: after story
+12       918                                            gintama
+```
+
+Hasil di atas mencerminkan anime-anime dengan **prediksi skor tertinggi** yang kemungkinan besar akan disukai oleh user tersebut, sesuai dengan pola preferensi yang telah dipelajari oleh model. Rekomendasi ini bersifat dinamis dan dapat disesuaikan untuk masing-masing pengguna.
+
 #### Kelebihan:
 
-* Memberikan rekomendasi yang lebih personal karena mempelajari preferensi pengguna.
-* Mampu menangkap hubungan non-linear dan kompleks antara pengguna dan anime.
-* Lebih akurat daripada model CF klasik seperti SVD, terutama dengan jumlah data yang besar.
+* Memberikan rekomendasi yang personal dan kontekstual.
+* Mampu mengenali pola kompleks antar pengguna dan item.
+* Lebih akurat dibanding metode klasik seperti SVD ketika tersedia banyak data interaksi.
 
 #### Kekurangan:
 
-* Membutuhkan data interaksi historis pengguna (tidak cocok untuk pengguna baru atau *cold-start user*).
-* Butuh waktu pelatihan dan komputasi yang lebih besar.
-* Model kompleks dan sulit diinterpretasi secara langsung.
+* Tidak cocok untuk pengguna baru (*cold-start problem*).
+* Membutuhkan komputasi lebih besar dan waktu pelatihan yang lama.
+* Model sulit diinterpretasikan secara langsung.
 
 ---
 
@@ -350,9 +378,9 @@ $$
 
 Hasil evaluasi menunjukkan:
 
-* MSE: 1.3998
-* RMSE: 1.1831
-* MAE: 0.8994
+* MSE: 1.4013
+* RMSE: 1.1838
+* MAE: 0.9005
 
 Artinya, rata-rata kesalahan prediksi model berada di bawah 1 poin rating, yang menandakan bahwa model cukup akurat dalam memprediksi rating pengguna terhadap anime.
 
