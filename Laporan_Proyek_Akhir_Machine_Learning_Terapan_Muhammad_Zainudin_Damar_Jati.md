@@ -194,23 +194,20 @@ Proses modeling dilakukan menggunakan dua pendekatan utama, yaitu:
 1.  **Content-Based Filtering (CBF)** — berbasis konten (*genre*).
 2.  **Collaborative Filtering (CF)** — berbasis interaksi pengguna dan *item*, menggunakan arsitektur **Neural Collaborative Filtering (NCF)**.
 
----
 
 ### A. Content-Based Filtering (CBF)
 
 #### Penjelasan Metode:
 
-*Content-Based Filtering* memberikan rekomendasi berdasarkan **kemiripan konten** antar anime. Dalam konteks ini, konten yang digunakan adalah **genre** anime. *Genre* tersebut diolah menggunakan metode **TF-IDF (Term Frequency–Inverse Document Frequency)** untuk membentuk representasi numerik dari setiap anime. Setelah itu, dihitung **cosine similarity** antar vektor *genre* untuk mengukur kemiripan.
+*Content-Based Filtering* memberikan rekomendasi berdasarkan **kemiripan konten** antar anime. Dalam konteks ini, konten yang digunakan adalah *genre*. Representasi numerik dari genre sudah diolah sebelumnya menggunakan teknik TF-IDF pada tahap *Data Preparation*. Kemudian, digunakan perhitungan **cosine similarity** antar vektor genre untuk menentukan anime yang paling mirip.
 
 #### Proses Implementasi:
 
-1.  **Pengolahan *Genre* dan TF-IDF**: *Genre* setiap anime digabungkan ke dalam satu *string* (misalnya: `"action,adventure,supernatural"`) dan kemudian diubah menjadi vektor numerik menggunakan TF-IDF.
-2.  **Perhitungan *Cosine Similarity***: *Cosine similarity* dihitung antara seluruh anime untuk mendapatkan matriks kemiripan.
-3.  **Fungsi Rekomendasi (`recommend_anime_content_based`):**
-    * Mencari anime berdasarkan judul *input* (dikonversi ke huruf kecil dan di-*trim*).
-    * Jika anime tidak ditemukan, fungsi akan mengembalikan `top_n` anime secara acak sebagai *fallback*.
-    * Jika ditemukan, indeks anime tersebut diambil, lalu anime lain dengan nilai *cosine similarity* tertinggi akan dicari.
-    * Mengembalikan `top_n` anime paling mirip beserta skornya, seperti contoh rekomendasi untuk "Naruto":
+1. Mencari anime berdasarkan judul input.
+2. Jika anime ditemukan, sistem akan mencari anime lain dengan nilai *cosine similarity* tertinggi.
+3. Mengembalikan anime yang paling mirip beserta skornya.
+
+Contoh hasil rekomendasi untuk input judul *"Naruto"* menunjukkan bahwa sistem mampu menyarankan anime lain dengan genre yang sangat mirip, seperti *"Naruto Shippuuden"*, *"Boruto"*, dan *"Naruto the Movie"*.
 
         ```
         print(recommend_anime_content_based("Naruto"))
@@ -239,7 +236,7 @@ Proses modeling dilakukan menggunakan dua pendekatan utama, yaitu:
 
 #### Penjelasan Metode:
 
-Metode ini menggunakan teknik **Neural Collaborative Filtering (NCF)**, yaitu pendekatan *deep learning* untuk memprediksi interaksi antara pengguna dan anime. Model belajar dari pola *rating* atau interaksi pengguna sebelumnya untuk membuat rekomendasi yang bersifat personal.
+Metode ini menggunakan pendekatan **Neural Collaborative Filtering (NCF)**, yaitu model *deep learning* yang mempelajari pola interaksi antara pengguna dan anime berdasarkan data rating yang tersedia. Dengan mempelajari hubungan pengguna dan anime secara non-linear, model ini mampu memberikan rekomendasi yang lebih personal.
 
 #### Arsitektur Model:
 
