@@ -35,29 +35,47 @@ Berdasarkan studi oleh Bobadilla et al. (2013), sistem rekomendasi dapat dikateg
 
 ### Dataset `anime.csv`
 
-Dataset ini berisi informasi metadata terkait anime dan terdiri dari 7 fitur berikut:
+Dataset ini berisi informasi metadata terkait anime dan terdiri dari **12.294** entri dan 7 fitur. Deskripsi setiap kolom beserta tipe datanya dan status penggunaannya adalah sebagai berikut:
 
-| Kolom      | Deskripsi                                                                      | Status Penggunaan                                                             |
-| ---------- | ------------------------------------------------------------------------------ | ----------------------------------------------------------------------------- |
-| `anime_id` | ID unik untuk setiap anime.                                                    | Digunakan sebagai primary key untuk join antar tabel.                         |
-| `name`     | Judul anime.                                                                   | Tidak digunakan dalam modeling, hanya untuk tampilan hasil rekomendasi.       |
-| `genre`    | Genre anime dalam format string, dipisahkan koma (misal: "Action, Adventure"). | Digunakan sebagai fitur dalam content-based filtering setelah diproses.       |
-| `type`     | Jenis media anime, seperti "TV", "Movie", "OVA", dll.                          | Akan dianalisis lebih lanjut untuk potensi feature tambahan.                  |
-| `episodes` | Jumlah episode.                                                                | Tidak digunakan dalam model, namun dapat digunakan untuk analisis deskriptif. |
-| `rating`   | Rata-rata rating pengguna terhadap anime (skala 0–10).                         | Digunakan untuk filtering anime dengan skor rendah.                           |
-| `members`  | Jumlah pengguna yang menambahkan anime ke daftar mereka.                       | Digunakan sebagai indikator popularitas.                                      |
+| Kolom      | Tipe Data | Deskripsi                                                                      | Status Penggunaan                                                          |
+| ---------- | --------- | ------------------------------------------------------------------------------ | -------------------------------------------------------------------------- |
+| `anime_id` | `int`     | ID unik untuk setiap anime.                                                    | Digunakan sebagai *primary key* dan untuk relasi antar tabel.              |
+| `name`     | `object`  | Judul anime.                                                                   | Tidak digunakan dalam modeling, hanya untuk tampilan hasil rekomendasi.    |
+| `genre`    | `object`  | Genre anime dalam format string, dipisahkan koma (misal: "Action, Adventure"). | Digunakan sebagai fitur dalam content-based filtering setelah diproses.    |
+| `type`     | `object`  | Jenis media anime, seperti "TV", "Movie", "OVA", dll.                          | Akan dianalisis lebih lanjut untuk potensi feature tambahan.               |
+| `episodes` | `object`  | Jumlah episode. Terkadang berisi nilai "Unknown".                              | Tidak digunakan dalam modeling, dapat digunakan untuk analisis deskriptif. |
+| `rating`   | `float`   | Rata-rata rating pengguna terhadap anime (skala 0–10).                         | Digunakan untuk filtering anime dengan skor rendah.                        |
+| `members`  | `int`     | Jumlah pengguna yang menambahkan anime ke daftar mereka.                       | Digunakan sebagai indikator popularitas.                                   |
+
+> Tidak ada kolom yang dihapus dari dataset ini, namun beberapa kolom tidak digunakan langsung dalam modeling, melainkan hanya untuk keperluan eksplorasi atau tampilan.
+
 
 
 
 ### Dataset `rating.csv`
 
-Dataset ini berisi interaksi antara pengguna dan anime. Terdiri dari 3 kolom:
+Dataset ini berisi data interaksi antara pengguna dan anime, terdiri dari lebih dari **7,8 juta** entri dan 3 kolom sebagai berikut:
 
-| Kolom      | Deskripsi                                                                          | Status Penggunaan                                                      |
-| ---------- | ---------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| `user_id`  | ID pengguna (anonim).                                                              | Digunakan dalam collaborative filtering.                               |
-| `anime_id` | ID anime, berfungsi sebagai foreign key.                                           | Digunakan untuk join dengan `anime.csv`.                               |
-| `rating`   | Rating yang diberikan oleh pengguna (skala 1–10, -1 berarti belum memberi rating). | Rating dengan nilai -1 akan dibuang. Sisanya digunakan dalam model CF. |
+| Kolom      | Tipe Data | Deskripsi                                                                          | Status Penggunaan                                                       |
+| ---------- | --------- | ---------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| `user_id`  | `int`     | ID pengguna (anonim).                                                              | Digunakan dalam collaborative filtering.                                |
+| `anime_id` | `int`     | ID anime, berfungsi sebagai foreign key untuk join dengan `anime.csv`.             | Digunakan untuk relasi antar tabel.                                     |
+| `rating`   | `int`     | Rating yang diberikan oleh pengguna (skala 1–10, -1 berarti belum memberi rating). | Rating -1 akan **dibuang** dari data; sisanya digunakan dalam model CF. |
+
+> Nilai `rating = -1` menandakan pengguna hanya menonton tanpa memberi penilaian eksplisit, sehingga entri tersebut akan **dihapus** dari proses modeling.
+
+### Struktur Relasi Antar Tabel
+
+Berikut adalah struktur relasi sederhana antara kedua dataset:
+
+```
+anime.csv (anime_id) ←───────┐
+                             │
+                      rating.csv
+                   (user_id, anime_id, rating)
+```
+
+* `anime_id` berfungsi sebagai **primary key** di `anime.csv` dan sebagai **foreign key** di `rating.csv`, menghubungkan informasi metadata anime dengan interaksi pengguna.
 
 
 ### Library yang Digunakan
