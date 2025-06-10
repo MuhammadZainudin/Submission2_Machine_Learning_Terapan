@@ -33,10 +33,32 @@ Berdasarkan studi oleh Bobadilla et al. (2013), sistem rekomendasi dapat dikateg
 
 ## Data Understanding
 
-Dataset yang digunakan dalam proyek ini bersumber dari [Anime Recommendation Database di Kaggle](https://www.kaggle.com/datasets/CooperUnion/anime-recommendations-database), yang terdiri atas dua file utama:
+### Dataset `anime.csv`
 
-* **`anime.csv`**: berisi metadata tentang anime seperti judul, genre, jenis (TV, Movie, OVA, dll), jumlah episode, rating, dan jumlah anggota komunitas.
-* **`rating.csv`**: memuat interaksi pengguna dengan anime berupa pemberian rating, yang mencakup ID pengguna, ID anime, dan nilai rating.
+Dataset ini berisi informasi metadata terkait anime dan terdiri dari 7 fitur berikut:
+
+| Kolom      | Deskripsi                                                                      | Status Penggunaan                                                             |
+| ---------- | ------------------------------------------------------------------------------ | ----------------------------------------------------------------------------- |
+| `anime_id` | ID unik untuk setiap anime.                                                    | Digunakan sebagai primary key untuk join antar tabel.                         |
+| `name`     | Judul anime.                                                                   | Tidak digunakan dalam modeling, hanya untuk tampilan hasil rekomendasi.       |
+| `genre`    | Genre anime dalam format string, dipisahkan koma (misal: "Action, Adventure"). | Digunakan sebagai fitur dalam content-based filtering setelah diproses.       |
+| `type`     | Jenis media anime, seperti "TV", "Movie", "OVA", dll.                          | Akan dianalisis lebih lanjut untuk potensi feature tambahan.                  |
+| `episodes` | Jumlah episode.                                                                | Tidak digunakan dalam model, namun dapat digunakan untuk analisis deskriptif. |
+| `rating`   | Rata-rata rating pengguna terhadap anime (skala 0–10).                         | Digunakan untuk filtering anime dengan skor rendah.                           |
+| `members`  | Jumlah pengguna yang menambahkan anime ke daftar mereka.                       | Digunakan sebagai indikator popularitas.                                      |
+
+
+
+### Dataset `rating.csv`
+
+Dataset ini berisi interaksi antara pengguna dan anime. Terdiri dari 3 kolom:
+
+| Kolom      | Deskripsi                                                                          | Status Penggunaan                                                      |
+| ---------- | ---------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| `user_id`  | ID pengguna (anonim).                                                              | Digunakan dalam collaborative filtering.                               |
+| `anime_id` | ID anime, berfungsi sebagai foreign key.                                           | Digunakan untuk join dengan `anime.csv`.                               |
+| `rating`   | Rating yang diberikan oleh pengguna (skala 1–10, -1 berarti belum memberi rating). | Rating dengan nilai -1 akan dibuang. Sisanya digunakan dalam model CF. |
+
 
 ### Library yang Digunakan
 
