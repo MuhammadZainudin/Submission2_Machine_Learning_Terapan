@@ -32,6 +32,8 @@ Berdasarkan studi oleh Bobadilla et al. (2013), sistem rekomendasi dapat dikateg
 ---
 
 ## Data Understanding
+Dataset yang digunakan dalam proyek ini bersumber dari [Anime Recommendation Database di Kaggle](https://www.kaggle.com/datasets/CooperUnion/anime-recommendations-database), yang terdiri atas dua file utama:
+
 
 ### Dataset `anime.csv`
 
@@ -149,40 +151,39 @@ Dari grafik terlihat bahwa:
 
 #### 1. Pembersihan dan Penyesuaian Data
 
-Langkah awal dalam pendekatan *Content-Based Filtering* adalah memastikan data `anime.csv` dan `rating.csv` bersih dan konsisten. Nilai rating yang tidak valid, seperti `-1`, dihapus karena tidak merepresentasikan penilaian nyata dari pengguna.
+Langkah awal dalam pendekatan *Content-Based Filtering* adalah memastikan data dari `anime.csv` dan `rating.csv` bersih dan konsisten. Nilai rating yang tidak valid, seperti `-1`, dihapus karena tidak merepresentasikan penilaian nyata dari pengguna.
 
-Kolom-kolom penting seperti `genre`, `type`, dan `rating` diperiksa dari nilai kosong. Genre dan type yang kosong diisi dengan label `'unknown'`, sementara rating yang kosong diisi dengan nilai **median**, agar tetap mencerminkan distribusi data secara umum.
+Kolom penting seperti `genre`, `type`, dan `rating` diperiksa dari nilai kosong. Kolom `genre` dan `type` yang kosong diisi dengan label `'unknown'`, sedangkan kolom `rating` yang kosong diisi dengan nilai **median**, agar tetap mencerminkan distribusi data secara umum.
 
-Kolom `episodes`, yang awalnya bertipe teks dan mengandung nilai tak valid seperti `'Unknown'`, dikonversi menjadi numerik. Nilai-nilai yang tidak valid dikonversi ke `NaN`, diisi dengan nilai **median**, dan diubah ke tipe integer.
+Kolom `episodes`, yang awalnya bertipe teks dan mengandung nilai tak valid seperti `'Unknown'`, dikonversi menjadi numerik. Nilai-nilai yang tidak valid diubah menjadi `NaN`, diisi dengan nilai **median**, dan kemudian dikonversi ke tipe integer.
 
-Seluruh kolom teks dinormalisasi dengan mengubah huruf menjadi kecil dan menghapus spasi yang tidak diperlukan, termasuk spasi di sekitar tanda koma dalam kolom `genre`. Hal ini dilakukan agar genre dapat dikenali dengan baik saat proses tokenisasi.
+Seluruh kolom teks dinormalisasi dengan mengubah huruf menjadi huruf kecil dan menghapus spasi yang tidak diperlukan. Pada kolom `genre`, spasi di sekitar tanda koma juga dibersihkan agar genre dapat dikenali dengan baik saat proses tokenisasi.
 
-Akhirnya, baris-baris dengan genre `'unknown'` dihapus, sehingga hanya data dengan informasi genre yang valid yang digunakan untuk proses rekomendasi.
+Untuk menjaga kualitas fitur konten, baris-baris dengan genre `'unknown'` dihapus sehingga hanya data dengan informasi genre yang valid yang digunakan dalam proses pembentukan fitur.
 
-#### 2. Persiapan Dataset Rekomendasi
+#### 2. Transformasi Fitur Genre
 
-Dari dataset yang telah dibersihkan, dibuat subset khusus yang hanya berisi ID anime, judul, dan genre. Nama kolom disesuaikan agar lebih deskriptif dan konsisten.
+Dari data yang telah dibersihkan, dibuat subset yang hanya berisi `anime_id`, `name`, dan `genre`. Genre kemudian diubah menjadi representasi numerik menggunakan metode **TF-IDF Vectorization**, yaitu teknik yang mengubah teks menjadi vektor berdimensi tinggi berdasarkan frekuensi dan keunikan kata dalam dokumen. Token genre dipisahkan berdasarkan koma agar dapat diolah sebagai fitur individual.
 
-Genre kemudian diubah menjadi representasi numerik menggunakan metode **TF-IDF Vectorization**, yang memetakan setiap genre ke dalam vektor berdimensi tinggi berdasarkan frekuensi dan keunikan tiap genre. Token genre dipisahkan berdasarkan koma.
-
-Setelah itu, dilakukan perhitungan **cosine similarity** antar vektor anime, yang menghasilkan skor kesamaan antar anime berdasarkan informasi genre. Matriks kesamaan ini menjadi dasar sistem rekomendasi berbasis konten.
+Hasil vektorisasi ini nantinya akan digunakan pada tahap *Modeling* untuk menghitung kemiripan antar anime.
 
 
 ### B. Collaborative Filtering
 
 #### 1. Pembersihan Data Rating
 
-Dalam pendekatan *Collaborative Filtering*, fokus utama ada pada data interaksi pengguna dengan anime. Oleh karena itu, hanya data dengan nilai `user_id`, `anime_id`, dan `rating` yang lengkap dan valid (lebih dari nol) yang digunakan.
+Pada pendekatan *Collaborative Filtering*, fokus utama ada pada data interaksi pengguna dengan anime. Oleh karena itu, hanya data dengan nilai `user_id`, `anime_id`, dan `rating` yang lengkap dan valid (lebih dari nol) yang digunakan.
 
 #### 2. Encoding dan Transformasi
 
 Karena model akan memproses data numerik, ID pengguna dan ID anime dikonversi menjadi indeks numerik melalui proses **label encoding**. Mapping dari ID asli ke indeks disimpan untuk keperluan interpretasi hasil model nantinya.
 
-Nilai rating kemudian dinormalisasi ke dalam skala 0–1 menggunakan **Min-Max Scaler**, agar lebih sesuai dengan fungsi aktivasi dalam model neural collaborative filtering.
+Nilai rating kemudian dinormalisasi ke dalam skala 0–1 menggunakan **Min-Max Scaler**, agar lebih sesuai dengan fungsi aktivasi dalam model *Neural Collaborative Filtering*.
 
 #### 3. Pembentukan Dataset
 
-Data interaksi kemudian dipecah menjadi fitur (berisi pasangan user dan anime) dan target (berisi rating). Dataset ini kemudian diacak dan dibagi menjadi dua bagian: data latih (80%) dan data validasi (20%), untuk memastikan evaluasi model lebih representatif.
+Data interaksi kemudian dipisahkan menjadi dua bagian: fitur (berisi pasangan user dan anime) dan target (berisi nilai rating). Dataset ini diacak dan dibagi menjadi data latih (80%) dan data validasi (20%) untuk memastikan evaluasi model yang representatif dan menghindari *data leakage*.
+
 
 ---
 
@@ -349,9 +350,9 @@ $$
 
 Hasil evaluasi menunjukkan:
 
-* MSE: 1.4011
-* RMSE: 1.1837
-* MAE: 0.8966
+* MSE: 1.3998
+* RMSE: 1.1831
+* MAE: 0.8994
 
 Artinya, rata-rata kesalahan prediksi model berada di bawah 1 poin rating, yang menandakan bahwa model cukup akurat dalam memprediksi rating pengguna terhadap anime.
 
