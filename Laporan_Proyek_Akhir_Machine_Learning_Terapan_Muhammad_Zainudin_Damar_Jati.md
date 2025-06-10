@@ -145,63 +145,44 @@ Dari grafik terlihat bahwa:
 
 ## Data Preparation
 
-### 1. Data Cleaning
+### A. Content-Based Filtering
 
-#### Menghapus Rating Tidak Valid
+#### 1. Pembersihan dan Penyesuaian Data
 
-Beberapa rating pengguna memiliki nilai `-1`, yang menandakan bahwa pengguna belum memberikan penilaian. Nilai ini tidak relevan dan dihapus agar tidak mengganggu analisis.
+Langkah awal dalam pendekatan *Content-Based Filtering* adalah memastikan data `anime.csv` dan `rating.csv` bersih dan konsisten. Nilai rating yang tidak valid, seperti `-1`, dihapus karena tidak merepresentasikan penilaian nyata dari pengguna.
 
-```python
-rating = rating[rating['rating'] != -1]
-```
+Kolom-kolom penting seperti `genre`, `type`, dan `rating` diperiksa dari nilai kosong. Genre dan type yang kosong diisi dengan label `'unknown'`, sementara rating yang kosong diisi dengan nilai **median**, agar tetap mencerminkan distribusi data secara umum.
 
-#### Menangani Nilai Kosong
+Kolom `episodes`, yang awalnya bertipe teks dan mengandung nilai tak valid seperti `'Unknown'`, dikonversi menjadi numerik. Nilai-nilai yang tidak valid dikonversi ke `NaN`, diisi dengan nilai **median**, dan diubah ke tipe integer.
 
-Nilai kosong pada kolom `genre` dan `type` diisi dengan `'unknown'`, sementara nilai kosong pada kolom `rating` diisi dengan nilai **median** agar tetap representatif terhadap distribusi data.
+Seluruh kolom teks dinormalisasi dengan mengubah huruf menjadi kecil dan menghapus spasi yang tidak diperlukan, termasuk spasi di sekitar tanda koma dalam kolom `genre`. Hal ini dilakukan agar genre dapat dikenali dengan baik saat proses tokenisasi.
 
-#### Konversi dan Imputasi Kolom Episodes
+Akhirnya, baris-baris dengan genre `'unknown'` dihapus, sehingga hanya data dengan informasi genre yang valid yang digunakan untuk proses rekomendasi.
 
-Kolom `episodes` awalnya berbentuk teks dan mengandung nilai tak valid seperti `'Unknown'`. Proses konversi dilakukan untuk menjadikannya numerik:
+#### 2. Persiapan Dataset Rekomendasi
 
-* Nilai tak valid dikonversi menjadi NaN.
-* Nilai NaN diisi dengan median.
-* Diubah ke integer agar konsisten.
+Dari dataset yang telah dibersihkan, dibuat subset khusus yang hanya berisi ID anime, judul, dan genre. Nama kolom disesuaikan agar lebih deskriptif dan konsisten.
 
-#### Validasi Kolom Penting
+Genre kemudian diubah menjadi representasi numerik menggunakan metode **TF-IDF Vectorization**, yang memetakan setiap genre ke dalam vektor berdimensi tinggi berdasarkan frekuensi dan keunikan tiap genre. Token genre dipisahkan berdasarkan koma.
 
-Setelah proses pembersihan, dipastikan tidak ada lagi nilai kosong pada kolom `episodes` dan `rating` agar proses model tidak gagal.
-
-```python
-assert not anime[['episodes', 'rating']].isnull().any().any()
-```
-
-#### Normalisasi Teks
-
-Untuk menjaga konsistensi, seluruh isi kolom teks diubah menjadi huruf kecil dan dihapus spasi yang tidak diperlukan. Ini penting agar data tidak dianggap berbeda hanya karena perbedaan kapitalisasi atau spasi.
-
-#### Perapihan Format Genre
-
-Spasi di sekitar tanda koma dalam kolom `genre` dihapus, agar genre dapat dikenali sebagai token tunggal dalam proses tokenisasi.
-
-#### Menghapus Genre Tidak Valid
-
-Baris dengan genre `'unknown'` dihapus agar hanya data dengan informasi genre yang valid digunakan dalam sistem rekomendasi.
+Setelah itu, dilakukan perhitungan **cosine similarity** antar vektor anime, yang menghasilkan skor kesamaan antar anime berdasarkan informasi genre. Matriks kesamaan ini menjadi dasar sistem rekomendasi berbasis konten.
 
 
-### 2. Membuat Dataset untuk Sistem Rekomendasi
+### B. Collaborative Filtering
 
-Dataset akhir untuk sistem rekomendasi berbasis konten disiapkan dengan hanya mengambil kolom:
+#### 1. Pembersihan Data Rating
 
-* `anime_id`
-* `title`
-* `genres`
+Dalam pendekatan *Collaborative Filtering*, fokus utama ada pada data interaksi pengguna dengan anime. Oleh karena itu, hanya data dengan nilai `user_id`, `anime_id`, dan `rating` yang lengkap dan valid (lebih dari nol) yang digunakan.
 
-Kolom-kolom ini disalin dari dataset hasil pembersihan dan dinamai ulang agar lebih deskriptif. Dataset ini akan digunakan untuk ekstraksi fitur dan pembuatan vektor kesamaan.
+#### 2. Encoding dan Transformasi
 
-```python
-content_based = anime_cleaned[['anime_id', 'name', 'genre']].copy()
-content_based.columns = ['anime_id', 'title', 'genres']
-```
+Karena model akan memproses data numerik, ID pengguna dan ID anime dikonversi menjadi indeks numerik melalui proses **label encoding**. Mapping dari ID asli ke indeks disimpan untuk keperluan interpretasi hasil model nantinya.
+
+Nilai rating kemudian dinormalisasi ke dalam skala 0–1 menggunakan **Min-Max Scaler**, agar lebih sesuai dengan fungsi aktivasi dalam model neural collaborative filtering.
+
+#### 3. Pembentukan Dataset
+
+Data interaksi kemudian dipecah menjadi fitur (berisi pasangan user dan anime) dan target (berisi rating). Dataset ini kemudian diacak dan dibagi menjadi dua bagian: data latih (80%) dan data validasi (20%), untuk memastikan evaluasi model lebih representatif.
 
 ---
 
