@@ -188,76 +188,93 @@ Data interaksi kemudian dipecah menjadi fitur (berisi pasangan user dan anime) d
 
 ## Modeling
 
-### 1. Content-Based Filtering (CBF)
+Proses modeling dilakukan menggunakan dua pendekatan utama, yaitu:
 
-* Menghitung kemiripan antar anime menggunakan cosine similarity pada matriks TF-IDF.
-* Output berupa anime dengan genre paling mirip terhadap input favorit pengguna.
-
-```python
-from sklearn.metrics.pairwise import cosine_similarity
-cos_sim = cosine_similarity(tfidf_matrix)
-```
-
-**Contoh Output Rekomendasi (jika input "Naruto")**:
-
-| Judul Anime       | Genre               | Skor Kemiripan |
-| ----------------- | ------------------- | -------------- |
-| Naruto: Shippuden | action,adventure    | 1.0            |
-| Bleach            | action,supernatural | 0.91           |
-| One Piece         | action,comedy       | 0.88           |
-
-**Kelebihan**: Tidak memerlukan data pengguna.
-**Kekurangan**: Tidak bisa menangani cold start item (anime tanpa genre).
+1.  **Content-Based Filtering (CBF)** — berbasis konten (*genre*).
+2.  **Collaborative Filtering (CF)** — berbasis interaksi pengguna dan *item*, menggunakan arsitektur **Neural Collaborative Filtering (NCF)**.
 
 ---
 
-### 2. Collaborative Filtering (Neural Collaborative Filtering)
+### A. Content-Based Filtering (CBF)
 
-* Menggunakan pendekatan **Neural Collaborative Filtering (NCF)** berbasis deep learning dengan representasi pengguna dan anime dalam bentuk **embedding**.
-* Model dilatih untuk memprediksi rating antara pengguna dan anime berdasarkan pola interaksi historis.
+#### Penjelasan Metode:
 
-```python
-# User & Anime Embedding Input
-user_input = Input(shape=(1,), name='user_input')
-anime_input = Input(shape=(1,), name='anime_input')
+*Content-Based Filtering* memberikan rekomendasi berdasarkan **kemiripan konten** antar anime. Dalam konteks ini, konten yang digunakan adalah **genre** anime. *Genre* tersebut diolah menggunakan metode **TF-IDF (Term Frequency–Inverse Document Frequency)** untuk membentuk representasi numerik dari setiap anime. Setelah itu, dihitung **cosine similarity** antar vektor *genre* untuk mengukur kemiripan.
 
-# Embedding layer
-user_embed = Embedding(input_dim=num_users, output_dim=embedding_dim)(user_input)
-anime_embed = Embedding(input_dim=num_anime, output_dim=embedding_dim)(anime_input)
+#### Proses Implementasi:
 
-# Flatten & Concatenate
-user_vec = Flatten()(user_embed)
-anime_vec = Flatten()(anime_embed)
-concat = Concatenate()([user_vec, anime_vec])
+1.  **Pengolahan *Genre* dan TF-IDF**: *Genre* setiap anime digabungkan ke dalam satu *string* (misalnya: `"action,adventure,supernatural"`) dan kemudian diubah menjadi vektor numerik menggunakan TF-IDF.
+2.  **Perhitungan *Cosine Similarity***: *Cosine similarity* dihitung antara seluruh anime untuk mendapatkan matriks kemiripan.
+3.  **Fungsi Rekomendasi (`recommend_anime_content_based`):**
+    * Mencari anime berdasarkan judul *input* (dikonversi ke huruf kecil dan di-*trim*).
+    * Jika anime tidak ditemukan, fungsi akan mengembalikan `top_n` anime secara acak sebagai *fallback*.
+    * Jika ditemukan, indeks anime tersebut diambil, lalu anime lain dengan nilai *cosine similarity* tertinggi akan dicari.
+    * Mengembalikan `top_n` anime paling mirip beserta skornya, seperti contoh rekomendasi untuk "Naruto":
 
-# Dense layers
-x = Dense(128)(concat)
-x = LeakyReLU()(x)
-x = Dropout(0.4)(x)
-x = Dense(64)(x)
-x = LeakyReLU()(x)
-x = Dropout(0.3)(x)
-x = Dense(32)(x)
-x = LeakyReLU()(x)
-x = Dropout(0.2)(x)
+        ```
+        print(recommend_anime_content_based("Naruto"))
+        # Output:
+        #                      title                                             genres  similarity_score
+        # 615        naruto: shippuuden  action,comedy,martial arts,shounen,super power               1.0
+        # 841                    naruto  action,comedy,martial arts,shounen,super power               1.0
+        # 1103  boruto: naruto the movie - naruto ga hokage ni...  action,comedy,martial arts,shounen,super power               1.0
+        # 1343               naruto x ut  action,comedy,martial arts,shounen,super power               1.0
+        # 1472  naruto: shippuuden movie 4 - the lost tower  action,comedy,martial arts,shounen,super power               1.0
+        ```
 
-# Output layer
-output = Dense(1)(x)
+#### Kelebihan:
 
-model = Model(inputs=[user_input, anime_input], outputs=output)
-model.compile(optimizer=Adam(1e-4), loss=Huber(), metrics=['mae'])
-model.fit([x_train[:, 0], x_train[:, 1]], y_train, ...)
-```
+* Tidak membutuhkan data interaksi pengguna (*suitable for cold-start user*).
+* Mudah diterapkan karena hanya bergantung pada metadata (*genre*).
 
-**Kelebihan**:
+#### Kelemahan:
 
-* Dapat memodelkan interaksi kompleks antar pengguna dan anime.
-* Akurasi lebih tinggi dibanding CF klasik seperti SVD jika data cukup besar.
+* Rekomendasi kurang personal (berbasis konten, bukan preferensi pengguna).
+* Tidak bisa memberikan rekomendasi jika data *genre* kosong atau tidak informatif.
 
-**Kekurangan**:
 
-* Memerlukan lebih banyak data dan sumber daya komputasi.
-* Tidak cocok untuk user baru tanpa histori (cold start user).
+
+### B. Collaborative Filtering (Neural Collaborative Filtering)
+
+#### Penjelasan Metode:
+
+Metode ini menggunakan teknik **Neural Collaborative Filtering (NCF)**, yaitu pendekatan *deep learning* untuk memprediksi interaksi antara pengguna dan anime. Model belajar dari pola *rating* atau interaksi pengguna sebelumnya untuk membuat rekomendasi yang bersifat personal.
+
+#### Arsitektur Model:
+
+Model NCF dibangun dengan arsitektur *embedding* yang memetakan ID pengguna dan ID anime ke dalam ruang vektor berdimensi tetap. Arsitektur ini meniru pendekatan *matrix factorization* dengan fleksibilitas *deep learning*. Berikut adalah detail lapisannya:
+
+* **Input**: `user_input` (ID pengguna) dan `anime_input` (ID anime).
+* **Embedding Layer**: Masing-masing ID dikonversi menjadi vektor *embedding* berdimensi tetap (misalnya 64). Regularisasi `l2(1e-5)` diterapkan pada *embedding* untuk mencegah *overfitting*.
+* **Flatten Layer**: Mengubah *embedding* dari dimensi (None, 1, 64) menjadi (None, 64).
+* **Concatenate Layer**: Menggabungkan vektor *embedding* pengguna dan anime.
+* **Hidden Layers**: Gabungan *embedding* dilewatkan melalui beberapa lapisan *dense neural network* dengan aktivasi **LeakyReLU** dan **Batch Normalization**. *Dropout* (`0.4`, `0.3`, `0.2`) dan regularisasi `l2(1e-4)` digunakan untuk mencegah *overfitting*.
+    * Dense 1: 128 *unit*
+    * Dense 2: 64 *unit*
+    * Dense 3: 32 *unit*
+* **Output Layer**: Lapisan *dense* dengan 1 *unit* untuk memprediksi skor *rating* atau kemungkinan interaksi.
+
+#### Proses *Training*:
+
+1.  **Pembagian Data**: Data dibagi menjadi data pelatihan (`x_train`, `y_train`) dan data validasi (`x_val`, `y_val`).
+2.  **Fungsi *Loss***: Model dioptimasi menggunakan **Adam Optimizer** dengan *learning rate* awal `1e-4` dan metrik **MAE (Mean Absolute Error)**. Fungsi *loss* yang digunakan adalah `weighted_huber`, sebuah modifikasi dari *Huber Loss* dengan pembobotan tambahan. *Rating* di bawah *threshold* (`0.3`) akan memiliki bobot lebih besar (`alpha=2.0`), berguna jika ingin lebih sensitif terhadap *rating* rendah (misalnya *outlier* atau ketidakpuasan pengguna).
+3.  ***Callbacks***:
+    * **Early Stopping**: `early_stop` menghentikan pelatihan jika `val_loss` tidak membaik selama 5 *epoch*, dan akan mengembalikan *weights* terbaik.
+    * **Learning Rate Scheduler**: `reduce_lr` akan menurunkan *learning rate* (faktor `0.5`, minimum `1e-6`) jika `val_loss` stagnan selama 3 *epoch*.
+    Kedua *callback* ini meningkatkan efisiensi dan performa pelatihan serta mencegah *overfitting*.
+4.  **Pelatihan Model**: Model dilatih selama maksimal 50 *epoch* dengan *batch size* 128. *Callbacks* yang telah didefinisikan digunakan untuk mengatur pelatihan secara dinamis.
+
+#### Kelebihan:
+
+* Memberikan rekomendasi yang lebih personal karena mempelajari preferensi pengguna.
+* Mampu menangkap hubungan non-linear dan kompleks antara pengguna dan anime.
+* Lebih akurat daripada model CF klasik seperti SVD, terutama dengan jumlah data yang besar.
+
+#### Kekurangan:
+
+* Membutuhkan data interaksi historis pengguna (tidak cocok untuk pengguna baru atau *cold-start user*).
+* Butuh waktu pelatihan dan komputasi yang lebih besar.
+* Model kompleks dan sulit diinterpretasi secara langsung.
 
 ---
 
